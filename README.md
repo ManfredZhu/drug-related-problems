@@ -1,48 +1,52 @@
-# 药物相关问题分类（DRP）Skill
+# Drug-Related Problems (DRP) Classification Skill
 
-按《中国药物相关问题分类系统（V1.0）》分析药师工作记录，输出 P / E1 / E2 / C / I / A / O 七类标准化编码，并写入 CSV。
+**English** · [简体中文](README.zh-CN.md)
 
-由上海交通大学医学院附属同仁医院制作，反馈渠道见 `SKILL.md` 文首。
+Analyze pharmacist case records against the Chinese Classification System for Drug-Related Problems (V1.0) and produce standardized P / E1 / E2 / C / I / A / O codes written to CSV.
 
-## 编码维度
+Created by Tongren Hospital, Shanghai Jiao Tong University School of Medicine.
 
-| 维度 | 含义 |
+> **Language note.** `SKILL.md` and every interactive prompt, trigger phrase, and option card are written in Chinese. This README is provided so non-Chinese readers can evaluate the project; actually running the skill requires reading Chinese.
+
+## Codes
+
+| Code | Meaning |
 |---|---|
-| P | 问题类型 |
-| E1 | 涉及的主要对象 |
-| E2 | 药品是否已用于患者 |
-| C | 原因 |
-| I | 介入方案 |
-| A | 介入接受情况 |
-| O | 问题状态 |
+| P | Problem type |
+| E1 | Primary object involved |
+| E2 | Whether the drug has already been given to the patient |
+| C | Cause |
+| I | Intervention |
+| A | Whether the intervention was accepted |
+| O | Problem status |
 
-每个维度都附带置信度评分，CSV 中另有一列总体置信度。
+Each dimension carries its own confidence score. The CSV adds one overall confidence column.
 
-## 安装
+## Install
 
-把整个目录放到你的 skill 目录下，例如：
+Clone the repository into your skills directory. For OpenCode:
 
 ```bash
 git clone https://github.com/ManfredZhu/drug-related-problems.git \
   ~/.config/opencode/skills/drug-related-problems
 ```
 
-Claude Code 用户放到 `~/.claude/skills/drug-related-problems`。
+For Claude Code, use `~/.claude/skills/drug-related-problems`.
 
-## 使用
+## Usage
 
-在对话里提到相关短语即可触发，比如「分析药物相关问题」「DRP 分类」「DRP 编码」。
+Mention a Chinese trigger phrase in the conversation, such as 「分析药物相关问题」, 「DRP 分类」, or 「DRP 编码」.
 
-skill 会先判断你给的输入够不够完整：
+The skill first checks whether the input is complete enough to encode:
 
-- **快路径**：材料已包含完整药师工作记录，直接编码，不打断你
-- **引导路径**：信息缺失时，按缺失的模块用选项卡片逐项采集，已齐备的模块不重复问
+- **Fast path**: the record already contains a full pharmacist work-up, so it encodes directly without interrupting you.
+- **Guided path**: when information is missing, it collects the gaps module by module using option cards. Modules that are already complete are not asked again.
 
-一份材料里如果有多个 DRP，会逐个独立编码，患者 ID 自动加序号（`P001-1`、`P001-2`）。
+If a single case contains multiple DRPs, each one is encoded independently and the patient ID gets a numeric suffix (`P001-1`, `P001-2`).
 
-## 输出
+## Output
 
-CSV，表头固定 20 列：
+A CSV file with a fixed 20-column header:
 
 ```
 Patient_ID, Gender, Age, Diagnosis,
@@ -52,30 +56,30 @@ I_Confidence, A_Confidence, O_Confidence, Overall_Confidence,
 Analysis_Notes, Last_Updated
 ```
 
-脚本有两种模式，`--mode` 默认为 `append`：
+`scripts/generate_csv.py` has two modes; `--mode` defaults to `append`:
 
 ```bash
-# 追加记录（文件不存在时自动创建）
+# Append a record (creates the file if it does not exist)
 python3 scripts/generate_csv.py --input result.json --output drp.csv
 
-# 按 Patient_ID 更新已有记录
+# Update existing records matched by Patient_ID
 python3 scripts/generate_csv.py --input result.json --output drp.csv --mode update
 ```
 
-输入的 JSON 格式见 `SKILL.md` 的「输入 JSON 格式」一节。
+The input JSON schema is documented in the 「输入 JSON 格式」 section of `SKILL.md`.
 
-## 目录结构
+## Layout
 
 ```
 .
-├── SKILL.md                       主流程与判定规则
+├── SKILL.md                       Workflow and decision rules
 ├── references/
-│   ├── classification_system.md   分类系统说明
-│   └── case_examples.md           案例示例
+│   ├── classification_system.md   Classification system reference
+│   └── case_examples.md           Worked examples
 └── scripts/
-    └── generate_csv.py            CSV 生成脚本
+    └── generate_csv.py            CSV writer
 ```
 
-## 版本
+## Version
 
-当前 v3.0.2
+v3.0.2
